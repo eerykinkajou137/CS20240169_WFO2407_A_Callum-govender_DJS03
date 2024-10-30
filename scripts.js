@@ -1,7 +1,7 @@
 import { books, authors, genres, BOOKS_PER_PAGE } from "./data.js";
 
 const elements = {
-  //Object pulling all the required elements from the DOM
+  //Object pulling all the required elements from
   listItems: document.querySelector("[data-list-items]"),
   searchGenres: document.querySelector("[data-search-genres]"),
   searchAuthors: document.querySelector("[data-search-authors]"),
@@ -29,14 +29,20 @@ const elements = {
 let page = 1;
 let matches = books;
 
-const starting = document.createDocumentFragment();
+renderBooks(matches); // Upon DOM loads
+searchBtn(genres, authors); // Needs to be implied once search icon is clicked
+loadTheme(); // Upon DOM loads
+showMoreBtn(); // Upon DOM loads
 
-for (const { author, id, image, title } of matches.slice(0, BOOKS_PER_PAGE)) {
-  const element = document.createElement("button");
-  element.classList = "preview";
-  element.setAttribute("data-preview", id);
+function renderBooks(matches) {
+  const starting = document.createDocumentFragment();
 
-  element.innerHTML = `
+  for (const { author, id, image, title } of matches.slice(0, BOOKS_PER_PAGE)) {
+    const element = document.createElement("button");
+    element.classList = "preview";
+    element.setAttribute("data-preview", id);
+
+    element.innerHTML = `
         <img
             class="preview__image"
             src="${image}"
@@ -48,61 +54,70 @@ for (const { author, id, image, title } of matches.slice(0, BOOKS_PER_PAGE)) {
         </div>
     `;
 
-  starting.appendChild(element);
-}
+    starting.appendChild(element);
+  }
 
-document.querySelector("[data-list-items]").appendChild(starting);
+  document.querySelector("[data-list-items]").appendChild(starting);
+} // Render the Books UI
 
-const genreHtml = document.createDocumentFragment();
-const firstGenreElement = document.createElement("option");
-firstGenreElement.value = "any";
-firstGenreElement.innerText = "All Genres";
-genreHtml.appendChild(firstGenreElement);
+function searchBtn(genres, authors) {
+  const genreHtml = document.createDocumentFragment();
+  const firstGenreElement = document.createElement("option");
+  firstGenreElement.value = "any";
+  firstGenreElement.innerText = "All Genres";
+  genreHtml.appendChild(firstGenreElement);
 
-for (const [id, name] of Object.entries(genres)) {
-  const element = document.createElement("option");
-  element.value = id;
-  element.innerText = name;
-  genreHtml.appendChild(element);
-}
+  for (const [id, name] of Object.entries(genres)) {
+    const element = document.createElement("option");
+    element.value = id;
+    element.innerText = name;
+    genreHtml.appendChild(element);
+  }
 
-document.querySelector("[data-search-genres]").appendChild(genreHtml);
+  document.querySelector("[data-search-genres]").appendChild(genreHtml);
 
-const authorsHtml = document.createDocumentFragment();
-const firstAuthorElement = document.createElement("option");
-firstAuthorElement.value = "any";
-firstAuthorElement.innerText = "All Authors";
-authorsHtml.appendChild(firstAuthorElement);
+  const authorsHtml = document.createDocumentFragment();
+  const firstAuthorElement = document.createElement("option");
+  firstAuthorElement.value = "any";
+  firstAuthorElement.innerText = "All Authors";
+  authorsHtml.appendChild(firstAuthorElement);
 
-for (const [id, name] of Object.entries(authors)) {
-  const element = document.createElement("option");
-  element.value = id;
-  element.innerText = name;
-  authorsHtml.appendChild(element);
-}
+  for (const [id, name] of Object.entries(authors)) {
+    const element = document.createElement("option");
+    element.value = id;
+    element.innerText = name;
+    authorsHtml.appendChild(element);
+  }
 
-document.querySelector("[data-search-authors]").appendChild(authorsHtml);
+  document.querySelector("[data-search-authors]").appendChild(authorsHtml);
+} // Search process
 
-if (
-  window.matchMedia &&
-  window.matchMedia("(prefers-color-scheme: dark)").matches
-) {
-  document.querySelector("[data-settings-theme]").value = "night";
-  document.documentElement.style.setProperty("--color-dark", "255, 255, 255");
-  document.documentElement.style.setProperty("--color-light", "10, 10, 20");
-} else {
-  document.querySelector("[data-settings-theme]").value = "day";
-  document.documentElement.style.setProperty("--color-dark", "10, 10, 20");
-  document.documentElement.style.setProperty("--color-light", "255, 255, 255");
-}
+function loadTheme() {
+  if (
+    window.matchMedia &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+  ) {
+    document.querySelector("[data-settings-theme]").value = "night";
+    document.documentElement.style.setProperty("--color-dark", "255, 255, 255");
+    document.documentElement.style.setProperty("--color-light", "10, 10, 20");
+  } else {
+    document.querySelector("[data-settings-theme]").value = "day";
+    document.documentElement.style.setProperty("--color-dark", "10, 10, 20");
+    document.documentElement.style.setProperty(
+      "--color-light",
+      "255, 255, 255"
+    );
+  }
+} // theme logic
 
-document.querySelector("[data-list-button]").innerText = `Show more (${
-  books.length - BOOKS_PER_PAGE
-})`;
-document.querySelector("[data-list-button]").disabled =
-  matches.length - page * BOOKS_PER_PAGE > 0;
+function showMoreBtn() {
+  document.querySelector("[data-list-button]").innerText = `Show more (${
+    books.length - BOOKS_PER_PAGE
+  })`;
+  document.querySelector("[data-list-button]").disabled =
+    matches.length - page * BOOKS_PER_PAGE > 0;
 
-document.querySelector("[data-list-button]").innerHTML = `
+  document.querySelector("[data-list-button]").innerHTML = `
     <span>Show more</span>
     <span class="list__remaining"> (${
       matches.length - page * BOOKS_PER_PAGE > 0
@@ -110,7 +125,9 @@ document.querySelector("[data-list-button]").innerHTML = `
         : 0
     })</span>
 `;
+} // Show more btn logic
 
+// Event Uopn click
 document.querySelector("[data-search-cancel]").addEventListener("click", () => {
   document.querySelector("[data-search-overlay]").open = false;
 });

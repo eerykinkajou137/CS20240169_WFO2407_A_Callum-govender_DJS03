@@ -1,36 +1,6 @@
 import { books, authors, genres, BOOKS_PER_PAGE } from "./data.js";
-
-const elements = {
-  //Object pulling all the required elements from
-  listItems: document.querySelector("[data-list-items]"),
-  searchGenres: document.querySelector("[data-search-genres]"),
-  searchAuthors: document.querySelector("[data-search-authors]"),
-  settingsTheme: document.querySelector("[data-settings-theme]"),
-  listButton: document.querySelector("[data-list-button]"),
-  searchCancel: document.querySelector("[data-search-cancel]"),
-  searchOverlay: document.querySelector("[data-search-overlay]"),
-  settingsCancel: document.querySelector("[data-settings-cancel]"),
-  settingsOverlay: document.querySelector("[data-settings-overlay]"),
-  headerSearch: document.querySelector("[data-header-search]"),
-  searchTitle: document.querySelector("[data-search-title]"),
-  headerSettings: document.querySelector("[data-header-settings]"),
-  listClose: document.querySelector("[data-list-close]"),
-  listActive: document.querySelector("[data-list-active]"),
-  settingsForm: document.querySelector("[data-settings-form]"),
-  searchForm: document.querySelector("[data-search-form]"),
-  listMessage: document.querySelector("[data-list-message]"),
-  listBlur: document.querySelector("[data-list-blur]"),
-  listImage: document.querySelector("[data-list-image]"),
-  listTitle: document.querySelector("[data-list-title]"),
-  listSubtitle: document.querySelector("[data-list-subtitle]"),
-  listDescription: document.querySelector("[data-list-description]"),
-};
-
 let page = 1;
 let matches = books;
-
-renderBooks(matches); // Upon DOM loads
-loadTheme(); // Upon DOM loads
 
 function renderBooks(matches) {
   const starting = document.createDocumentFragment();
@@ -106,24 +76,28 @@ function loadTheme() {
       "255, 255, 255"
     );
   }
-} // theme logic
+} // Theme logic
 
-function showMoreBtn(matches, BOOKS_PER_PAGE) {
-  document.querySelector("[data-list-button]").innerText = `Show more (${
-    books.length - BOOKS_PER_PAGE
-  })`;
-  document.querySelector("[data-list-button]").disabled =
-    matches.length - page * BOOKS_PER_PAGE > 0;
+function showMoreBtn() {
+  const button = document.querySelector("[data-list-button]");
+  const remainingBooks = matches.length - page * BOOKS_PER_PAGE;
 
-  document.querySelector("[data-list-button]").innerHTML = `
+  button.innerText = `Show more (${remainingBooks})`;
+  button.disabled = remainingBooks <= 0;
+
+  button.innerHTML = `
     <span>Show more</span>
     <span class="list__remaining"> (${
-      matches.length - page * BOOKS_PER_PAGE > 0
-        ? matches.length - page * BOOKS_PER_PAGE
-        : 0
+      remainingBooks > 0 ? remainingBooks : 0
     })</span>
-`;
-} // Show more btn logic
+  `;
+} // Show more button logic
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderBooks(matches); // Execute upon DOM load
+  loadTheme(); // Execute upon DOM load
+  showMoreBtn(); // Update the show more button
+});
 
 const eventListeners = {
   init() {
@@ -183,13 +157,13 @@ const eventListeners = {
   },
 
   showMoreBooks() {
-    showMoreBtn(matches, BOOKS_PER_PAGE); // Upon DOM loads
     const fragment = document.createDocumentFragment();
 
-    for (const { author, id, image, title } of matches.slice(
+    const nextBooks = matches.slice(
       page * BOOKS_PER_PAGE,
       (page + 1) * BOOKS_PER_PAGE
-    )) {
+    );
+    for (const { author, id, image, title } of nextBooks) {
       const element = document.createElement("button");
       element.classList = "preview";
       element.setAttribute("data-preview", id);
@@ -211,6 +185,7 @@ const eventListeners = {
 
     document.querySelector("[data-list-items]").appendChild(fragment);
     page += 1;
+    showMoreBtn(); // Update the button state after loading more books
   },
 
   showBookDetails(event) {
@@ -309,7 +284,7 @@ const eventListeners = {
     document.querySelector("[data-list-items]").innerHTML = "";
     const newItems = document.createDocumentFragment();
 
-    for (const { author, id, image, title } of result.slice(
+    for (const { author, id, image, title } of matches.slice(
       0,
       BOOKS_PER_PAGE
     )) {
@@ -318,37 +293,22 @@ const eventListeners = {
       element.setAttribute("data-preview", id);
 
       element.innerHTML = `
-            <img
-                class="preview__image"
-                src="${image}"
-            />
-            
-            <div class="preview__info">
-                <h3 class="preview__title">${title}</h3>
-                <div class="preview__author">${authors[author]}</div>
-            </div>
-        `;
-
+        <img
+            class="preview__image"
+            src="${image}"
+        />
+        
+        <div class="preview__info">
+            <h3 class="preview__title">${title}</h3>
+            <div class="preview__author">${authors[author]}</div>
+        </div>
+      `;
       newItems.appendChild(element);
     }
 
     document.querySelector("[data-list-items]").appendChild(newItems);
-    document.querySelector("[data-list-button]").disabled =
-      matches.length - page * BOOKS_PER_PAGE < 1;
-
-    document.querySelector("[data-list-button]").innerHTML = `
-        <span>Show more</span>
-        <span class="list__remaining"> (${
-          matches.length - page * BOOKS_PER_PAGE > 0
-            ? matches.length - page * BOOKS_PER_PAGE
-            : 0
-        })</span>
-    `;
-
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    document.querySelector("[data-search-overlay]").open = false;
+    showMoreBtn(); // Update the button state after search
   },
 };
 
-// Initialize event listeners
 eventListeners.init();

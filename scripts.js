@@ -224,6 +224,7 @@ const eventListeners = {
       .querySelector("[data-list-message]")
       .classList.toggle("list__message_show", matches.length < 1);
     document.querySelector("[data-list-items]").innerHTML = "";
+    document.querySelector("[data-search-overlay]").open = false;
     renderBooks(matches);
     updateShowMoreButton();
   },
